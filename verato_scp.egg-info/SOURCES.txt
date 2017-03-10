@@ -1,0 +1,15 @@
+MANIFEST.in
+README.rst
+setup.py
+scripts/vscp.py
+verato_scp/__init__.py
+verato_scp/logging.py
+verato_scp/scp.py
+verato_scp/server.py
+verato_scp/vscp.py
+verato_scp.egg-info/PKG-INFO
+verato_scp.egg-info/SOURCES.txt
+verato_scp.egg-info/dependency_links.txt
+verato_scp.egg-info/not-zip-safe
+verato_scp.egg-info/requires.txt
+verato_scp.egg-info/top_level.txt

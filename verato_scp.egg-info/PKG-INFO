@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: verato-scp
+Version: 0.1
+Summary: Utility to help scp file with commands and run on host (local -> jump -> provisioner -> host)
+Home-page: https://github.com/olzhas23/verato_scp.git
+Author: Olzhas Shaikenov
+Author-email: olzhas.shaikenov@verato.com
+License: MIT
+Description: This utility is useful when you have a setup when you need to run some code on multiple machines
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: System :: Distributed Computing

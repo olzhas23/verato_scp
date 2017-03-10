@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import socket
 import sys
 
@@ -28,46 +29,55 @@ class SCPException(Exception):
     pass
 
 
-def run(jump_ip, provisioner_ip, app_name_ip, username, command, time, printout):
+def run(jumpIp, provisionerIp, appNameOrIp, username, command, time, printout, recursive):
     try:
-        connection = Server()
+        newCon = Server()
 
-        my_ip = str(socket.gethostbyname(socket.gethostname()))
+        myIp = str(socket.gethostbyname(socket.gethostname()))
 
-        vm = connection.hook(my_ip, jump_ip, provisioner_ip, app_name_ip, username)
+        vm = newCon.hook(myIp, jumpIp, provisionerIp, appNameOrIp, username)
 
         if vm is not None:
             runthis = str(command)
             vmtransport = vm.get_transport()
-            dest_addr = (provisioner_ip, 22)  # edited#
-            local_addr = (my_ip, 22)
+            dest_addr = (provisionerIp, 22)  # edited#
+
+            local_addr = (myIp, 22)
             vmchannel = vmtransport.open_channel("direct-tcpip", dest_addr, local_addr)
+
             jhost = paramiko.SSHClient()
             jhost.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
             jhost.connect('appNameOrIp', username=username, sock=vmchannel)
+
             ntransport = jhost.get_transport()
-            app1 = (app_name_ip, 22)
-            prov = (provisioner_ip, 22)
+            app1 = (appNameOrIp, 22)
+            prov = (provisionerIp, 22)
+
             pro_channel = ntransport.open_channel('direct-tcpip', app1, prov)
+
             apphost = paramiko.SSHClient()
             apphost.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            apphost.connect(app_name_ip, username=username, sock=pro_channel)
+            apphost.connect(appNameOrIp, username=username, sock=pro_channel)
+
             try:
 
                 stdin, stdout, stderr = apphost.exec_command(runthis, timeout=int(time))
                 if printout:
                     print stderr.read(), stdout.read()
+                sys.stdout = Logger()
+                string = stdout.read()
+                logging = Logger()
+                logging.write(string)
+
+                jhost.close()
+                vm.close()
             except PipeTimeout as pt:
                 print pt
+            except socket.timeout as t:
+                print t
             except socket.error as e:
                 print e
-
-            sys.stdout = Logger()
-            string = stdout.read()
-            logging = Logger()
-            logging.write(string)
-            jhost.close()
-            vm.close()
 
             return True
 
@@ -83,30 +93,37 @@ def run(jump_ip, provisioner_ip, app_name_ip, username, command, time, printout)
         raise
 
 
-def run_file(jump_ip, provisioner_ip, app_name_ip, username, command, time, printout, recursive, filename):
+def run_file(jumpIp, provisionerIp, appNameOrIp, username, command, time, printout, recursive, filename):
     try:
-        connection = Server()
+        newCon = Server()
 
-        my_ip = str(socket.gethostbyname(socket.gethostname()))
+        myIp = str(socket.gethostbyname(socket.gethostname()))
 
-        vm = connection.hook(my_ip, jump_ip, provisioner_ip, app_name_ip, username)
+        vm = newCon.hook(myIp, jumpIp, provisionerIp, appNameOrIp, username)
 
         if vm is not None:
             runthis = str(command)
             vmtransport = vm.get_transport()
-            dest_addr = (provisioner_ip, 22)  # edited#
-            local_addr = (my_ip, 22)
+            dest_addr = (provisionerIp, 22)  # edited#
+
+            local_addr = (myIp, 22)
             vmchannel = vmtransport.open_channel("direct-tcpip", dest_addr, local_addr)
+
             jhost = paramiko.SSHClient()
             jhost.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
             jhost.connect('appNameOrIp', username=username, sock=vmchannel)
+
             ntransport = jhost.get_transport()
-            app1 = (app_name_ip, 22)
-            prov = (provisioner_ip, 22)
+            app1 = (appNameOrIp, 22)
+            prov = (provisionerIp, 22)
+
             pro_channel = ntransport.open_channel('direct-tcpip', app1, prov)
+
             apphost = paramiko.SSHClient()
             apphost.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            apphost.connect(app_name_ip, username=username, sock=pro_channel)
+            apphost.connect(appNameOrIp, username=username, sock=pro_channel)
+
             scp = SCPClient(apphost.get_transport())
             scp.put(filename, recursive=recursive)
             try:
@@ -114,18 +131,25 @@ def run_file(jump_ip, provisioner_ip, app_name_ip, username, command, time, prin
                 stdin, stdout, stderr = apphost.exec_command(runthis, timeout=int(time))
                 if printout:
                     print stderr.read(), stdout.read()
+                sys.stdout = Logger()
+                string = stdout.read()
+                logging = Logger()
+                logging.write(string)
+                scp.close()
+                jhost.close()
+                vm.close()
             except PipeTimeout as pt:
                 print pt
+            except socket.timeout as t:
+                print  t
             except socket.error as e:
                 print e
 
-            sys.stdout = Logger()
-            string = stdout.read()
-            logging = Logger()
-            logging.write(string)
-            scp.close()
-            jhost.close()
-            vm.close()
+
+
+
+
+
 
         else:
             print "Connection Failed, read ErrorLog.log for more details"
